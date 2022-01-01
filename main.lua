@@ -17,12 +17,15 @@ function lovr.load()
   local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, 0.1, 20))
   box:setKinematic(true)
 
-  for height = 0.3, 1.5, 0.4 do
-    local pose = mat4():rotate(math.pi/8, 0,1,0):translate(0, height, -1)
-    local size = vec3(0.3, 0.4, 0.2)
-    local box = world:newBoxCollider(vec3(pose), size)
-    box:setOrientation(quat(pose))
-    table.insert(boxes, box)
+  -- make boxes to play with
+  for width = 0, 1, 0.2 do
+    for height = 0.3, 1.5, 0.21 do
+      local pose = mat4():rotate(-0.2, 0,1,0):translate(width, height, -0.6)
+      local size = vec3(0.1, 0.18, 0.18)
+      local box = world:newBoxCollider(vec3(pose), size)
+      box:setOrientation(quat(pose))
+      table.insert(boxes, box)
+    end
   end
 
   -- make colliders for two hands
@@ -85,8 +88,8 @@ function lovr.draw()
 
   -- create floor and walls
   lovr.graphics.setColor(0x203166)
-  lovr.graphics.cylinder(0,-1,0, 3,  math.pi/2,  1,0,0,  10)
-  make_boxes(0.5, 4, 8, 0x304176)
+  lovr.graphics.cylinder(0,-1,0, 1,  math.pi/2,  1,0,0,  10)
+  make_boxes(1, 4, 8, 0x304176)
 
   for i, collider in ipairs(hands.colliders) do
     local alpha = hands.solid[i] and 1 or 0.2
@@ -126,7 +129,7 @@ function make_boxes(height, width, distance, color)
     local pose = mat4()
     pose:rotate(angle, 0,1,0) -- rotate over Y axis
     --pose:rotate(angle + lovr.timer.getTime() / 10,  0,1,0) -- rotate over Y axis
-    pose:translate(0, 0.7, -distance)  -- move away from origin
+    pose:translate(0, 0, -distance)  -- move away from origin
     pose:scale(width, height, 0.1) -- block size
     lovr.graphics.box('fill', pose)
   end
