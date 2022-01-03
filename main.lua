@@ -14,15 +14,15 @@ local framerate = 1 / 72 -- fixed framerate is recommended for physics updates
 function lovr.load()
   skybox = lovr.graphics.newTexture('space.png')
   world = lovr.physics.newWorld(0, -2, 0, false) -- low gravity and no collider sleeping
-  local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, -0.1, 20))
+  local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, 0.1, 20))
   box:setKinematic(true)
 
   -- make boxes to play with
   for depth = 0, 1, 0.2 do
     for width = 0, 1, 0.2 do
-      for height = 0.3, 1.5, 0.21 do
-        local pose = mat4():rotate(-0.2, 0,1,0):translate(width, height, -0.5 - depth)
-        local size = vec3(0.09, 0.18, 0.18)
+      for height = 0.1, 0.8, 0.13 do
+        local pose = mat4():rotate(-0.7, 0,1,0):translate(width, height, -0.6 - depth)
+        local size = vec3(0.09, 0.13, 0.18)
         local box = world:newBoxCollider(vec3(pose), size)
         box:setOrientation(quat(pose))
         table.insert(boxes, box)
@@ -100,7 +100,7 @@ end
 
 function lovr.update(dt)
   -- set light position
-  shader:send('lightPos', {2, 2.0, 3.0})
+  shader:send('lightPos', {-2, 4.0, 1.0})
 
   -- Adjust head position (for specular)
   if lovr.headset then
@@ -156,7 +156,7 @@ function lovr.draw()
 
   -- create floor and walls
   lovr.graphics.setColor(0x203166)
-  lovr.graphics.cylinder(0,-1,0, 1,  math.pi/2,  1,0,0,  10)
+  lovr.graphics.box('fill', 0, 0, 0, 20, 0.1, 20)
   make_boxes(1, 4, 8, 0x304176)
 
   for i, collider in ipairs(hands.colliders) do
