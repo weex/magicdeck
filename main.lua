@@ -18,13 +18,15 @@ function lovr.load()
   box:setKinematic(true)
 
   -- make boxes to play with
-  for width = 0, 1, 0.2 do
-    for height = 0.3, 1.5, 0.21 do
-      local pose = mat4():rotate(-0.2, 0,1,0):translate(width, height, -0.6)
-      local size = vec3(0.1, 0.18, 0.18)
-      local box = world:newBoxCollider(vec3(pose), size)
-      box:setOrientation(quat(pose))
-      table.insert(boxes, box)
+  for depth = 0, 1, 0.2 do
+    for width = 0, 1, 0.2 do
+      for height = 0.3, 1.5, 0.21 do
+        local pose = mat4():rotate(-0.2, 0,1,0):translate(width, height, -0.5 - depth)
+        local size = vec3(0.09, 0.18, 0.18)
+        local box = world:newBoxCollider(vec3(pose), size)
+        box:setOrientation(quat(pose))
+        table.insert(boxes, box)
+      end
     end
   end
 
@@ -84,6 +86,7 @@ function lovr.update(dt)
 end
 
 function lovr.draw()
+  lovr.graphics.setColor(0xFFFFFF)
   lovr.graphics.skybox(skybox)
 
   -- create floor and walls
@@ -98,8 +101,10 @@ function lovr.draw()
   end
   lovr.math.setRandomSeed(0)
   for i, collider in ipairs(boxes) do
-    local shade = 0.2 + 0.6 * lovr.math.random()
-    lovr.graphics.setColor(shade, shade, shade)
+    vx, vy, vz = collider:getLinearVelocity()
+    local shade = math.abs(vx) + math.abs(vy) + math.abs(vz)
+    -- 0.2 + 0.6 * lovr.math.random()
+    lovr.graphics.setColor(shade, 0.5, 0.5)
     drawBoxCollider(collider)
   end
 end
@@ -135,9 +140,7 @@ function make_boxes(height, width, distance, color)
   end
 end
 
- -- I don't see any stars
  -- there are no cool floating objects out there
- -- there's nothing to interact with
  -- Editor should spawn lower and angled, with smaller text
  -- I can't do git stuff
  -- I can't look at a sensible browser
