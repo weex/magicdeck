@@ -14,7 +14,7 @@ local framerate = 1 / 72 -- fixed framerate is recommended for physics updates
 function lovr.load()
   skybox = lovr.graphics.newTexture('space.png')
   world = lovr.physics.newWorld(0, -2, 0, false) -- low gravity and no collider sleeping
-  local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, 0.1, 20))
+  local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, -0.1, 20))
   box:setKinematic(true)
 
   -- make boxes to play with
@@ -42,9 +42,72 @@ function lovr.load()
         hands.touching[i] = collider
       end)
   end
+
+  -- add lighting per lovr-phong
+  -- set up shader
+  defaultVertex = [[
+        out vec3 FragmentPos;
+        out vec3 Normal;
+
+        vec4 position(mat4 projection, mat4 transform, vec4 vertex) {
+            Normal = lovrNormal;
+            FragmentPos = (lovrModel * vertex).xyz;
+
+            return projection * transform * vertex;
+        }
+  ]]
+  defaultFragment = [[
+        uniform vec4 liteColor;
+
+        uniform vec4 ambience;
+
+        in vec3 Normal;
+        in vec3 FragmentPos;
+        uniform vec3 lightPos;
+
+        uniform vec3 viewPos;
+        uniform float specularStrength;
+        uniform float metallic;
+
+        vec4 color(vec4 graphicsColor, sampler2D image, vec2 uv)
+        {
+            //diffuse
+            vec3 norm = normalize(Normal);
+            vec3 lightDir = normalize(lightPos - FragmentPos);
+            float diff = max(dot(norm, lightDir), 0.0);
+            vec4 diffuse = diff * liteColor;
+
+            //specular
+            vec3 viewDir = normalize(viewPos - FragmentPos);
+            vec3 reflectDir = reflect(-lightDir, norm);
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), metallic);
+            vec4 specular = specularStrength * spec * liteColor;
+
+            vec4 baseColor = graphicsColor * texture(image, uv);
+            //vec4 objectColor = baseColor * vertexColor;
+
+            return baseColor * (ambience + diffuse + specular);
+        }
+  ]]
+  shader = lovr.graphics.newShader(defaultVertex, defaultFragment, {})
+
+  -- Set default shader values
+  shader:send('liteColor', {1.0, 1.0, 1.0, 1.0})
+  shader:send('ambience', {0.05, 0.05, 0.05, 1.0})
+  shader:send('specularStrength', 0.5)
+  shader:send('metallic', 32.0)
 end
 
 function lovr.update(dt)
+  -- set light position
+  shader:send('lightPos', {2, 2.0, 3.0})
+
+  -- Adjust head position (for specular)
+  if lovr.headset then
+      hx, hy, hz = lovr.headset.getPosition()
+      shader:send('viewPos', { hx, hy, hz } )
+  end
+
   -- override collision resolver to notify all colliders that have registered their callbacks
   world:update(framerate, function(world)
     world:computeOverlaps()
@@ -89,6 +152,8 @@ function lovr.draw()
   lovr.graphics.setColor(0xFFFFFF)
   lovr.graphics.skybox(skybox)
 
+  lovr.graphics.setShader(shader)
+
   -- create floor and walls
   lovr.graphics.setColor(0x203166)
   lovr.graphics.cylinder(0,-1,0, 1,  math.pi/2,  1,0,0,  10)
@@ -107,6 +172,8 @@ function lovr.draw()
     lovr.graphics.setColor(shade, 0.5, 0.5)
     drawBoxCollider(collider)
   end
+
+  lovr.graphics.setShader() -- Reset to default/unlit
 end
 
 function drawBoxCollider(collider)
