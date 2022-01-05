@@ -15,6 +15,7 @@ function lovr.load()
   skybox = lovr.graphics.newTexture('space.png')
   world = lovr.physics.newWorld(0, -2, 0, false) -- low gravity and no collider sleeping
   local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, 0.1, 20))
+  box:setFriction(100)
   box:setKinematic(true)
 
   -- make walls
@@ -28,6 +29,7 @@ function lovr.load()
         local size = vec3(0.09, 0.13, 0.18)
         local box = world:newBoxCollider(vec3(pose), size)
         box:setOrientation(quat(pose))
+        box:setFriction(100)
         table.insert(boxes, box)
       end
     end
