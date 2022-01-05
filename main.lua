@@ -17,9 +17,12 @@ function lovr.load()
   local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, 0.1, 20))
   box:setKinematic(true)
 
+  -- make walls
+  make_boxes(1, 4, 6, 0x304176)
+
   -- make boxes to play with
-  for depth = 0, 1, 0.2 do
-    for width = 0, 1, 0.2 do
+  for depth = 0, 0.6, 0.2 do
+    for width = 0, 0.6, 0.2 do
       for height = 0.1, 0.8, 0.13 do
         local pose = mat4():rotate(-0.7, 0,1,0):translate(width, height, -0.6 - depth)
         local size = vec3(0.09, 0.13, 0.18)
@@ -121,6 +124,7 @@ function lovr.update(dt)
       end
     end
   end)
+
   -- hand updates - location, orientation, solidify on trigger button, grab on grip button
   for i, hand in pairs(lovr.headset.getHands()) do
     -- align collider with controller by applying force (position) and torque (orientation)
@@ -149,7 +153,7 @@ function lovr.update(dt)
 end
 
 function lovr.draw()
-  lovr.graphics.setColor(0xFFFFFF)
+  lovr.graphics.setColor(0xdFdFdF)
   lovr.graphics.skybox(skybox)
 
   lovr.graphics.setShader(shader)
@@ -157,7 +161,6 @@ function lovr.draw()
   -- create floor and walls
   lovr.graphics.setColor(0x203166)
   lovr.graphics.box('fill', 0, 0, 0, 20, 0.1, 20)
-  make_boxes(1, 4, 8, 0x304176)
 
   for i, collider in ipairs(hands.colliders) do
     local alpha = hands.solid[i] and 1 or 0.2
@@ -168,7 +171,6 @@ function lovr.draw()
   for i, collider in ipairs(boxes) do
     vx, vy, vz = collider:getLinearVelocity()
     local shade = math.abs(vx) + math.abs(vy) + math.abs(vz)
-    -- 0.2 + 0.6 * lovr.math.random()
     lovr.graphics.setColor(shade, 0.5, 0.5)
     drawBoxCollider(collider)
   end
@@ -198,20 +200,24 @@ end
 function make_boxes(height, width, distance, color)
   lovr.graphics.setColor(color)
   for angle = 0, math.pi * 2, math.pi / 6 do
-    local pose = mat4()
-    pose:rotate(angle, 0,1,0) -- rotate over Y axis
+    local pose = mat4():rotate(angle, 0,1,0):translate(0, height/2.0, distance)
     --pose:rotate(angle + lovr.timer.getTime() / 10,  0,1,0) -- rotate over Y axis
-    pose:translate(0, 0, -distance)  -- move away from origin
+    --pose:rotate(angle, 0,0,1) -- rotate over Y axis
+    --pose:translate(0, height/2.0, -distance)  -- move away from origin
+    --pose:rotate(2*angle, 0,1,0) -- rotate over Y axis
     pose:scale(width, height, 0.1) -- block size
+    local size = vec3(width, height, 0.1)
+    local box = world:newBoxCollider(vec3(pose), size)
+    --box:setOrientation(quat(pose))
+    box:setKinematic(true)
+    table.insert(boxes, box)
     lovr.graphics.box('fill', pose)
   end
 end
 
+ -- want to make those little walls colliders
  -- there are no cool floating objects out there
- -- Editor should spawn lower and angled, with smaller text
- -- I can't do git stuff
- -- I can't look at a sensible browser
- -- no vim keybindings
+ -- I can't look at a sensible browser, just use oculus browser
 
 -- Ctrl+Shift+Home centers the editor to be in front of camera
 -- F10 toggles the 'fullscreen' mode for current editor
