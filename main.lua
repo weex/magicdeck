@@ -18,8 +18,7 @@ function lovr.load()
   box:setFriction(100)
   box:setKinematic(true)
 
-  -- make walls
-  make_boxes(1, 4, 6, 0x304176)
+  make_walls(0.6, 2, 6, 0x304176)
 
   -- make boxes to play with
   for depth = 0, 0.6, 0.2 do
@@ -199,7 +198,7 @@ function registerCollisionCallback(collider, callback)
   -- to be called with arguments callback(otherCollider, world) from update function
 end
 
-function make_boxes(height, width, distance, color)
+function make_walls(height, width, distance, color)
   lovr.graphics.setColor(color)
   for angle = 0, math.pi * 2, math.pi / 6 do
     local pose = mat4():rotate(angle, 0,1,0):translate(0, height/2.0, distance)
