@@ -12,9 +12,9 @@ local boxes = {}
 local framerate = 1 / 72 -- fixed framerate is recommended for physics updates
 
 function lovr.load()
-  skybox = lovr.graphics.newTexture('space.png')
+  skybox = lovr.graphics.newTexture('tycho3.jpeg')
   world = lovr.physics.newWorld(0, -2, 0, false) -- low gravity and no collider sleeping
-  local box = world:newBoxCollider(vec3(0, 0, 0), vec3(20, 0.1, 20))
+  local box = world:newBoxCollider(vec3(0, 0, 0), vec3(2000, 0.1, 2000))
   box:setFriction(100)
   box:setKinematic(true)
 
@@ -161,8 +161,8 @@ function lovr.draw()
   lovr.graphics.setShader(shader)
 
   -- create floor and walls
-  lovr.graphics.setColor(0x203166)
-  lovr.graphics.box('fill', 0, 0, 0, 20, 0.1, 20)
+  lovr.graphics.setColor(0xdd6666)
+  lovr.graphics.box('fill', 0, 0, 0, 2000, 0.1, 2000)
 
   for i, collider in ipairs(hands.colliders) do
     local alpha = hands.solid[i] and 1 or 0.2
